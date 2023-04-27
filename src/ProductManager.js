@@ -90,8 +90,9 @@ const newProduct = productManager.addProduct({
   thumbnail: 'Sin imagen',
   code: 'abc123',
   stock: 25
-});
+}); 
 console.log(newProduct); 
 
-productManager.deleteProduct(1);
+//productManager.deleteProduct(11);
+
 

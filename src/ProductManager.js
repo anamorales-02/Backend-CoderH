@@ -1,6 +1,5 @@
-const fs = require("fs");
+const fs = require("fs").promises;
 const path = require("path");
-
 
 class ProductManager {
   #lastId = 0;
@@ -41,7 +40,7 @@ class ProductManager {
 
   async getProducts() {
     try {
-      const data = await fs.promises.readFile(this.filePath, "utf8");
+      const data = await fs.readFile(this.filePath, "utf8");
       return JSON.parse(data);
     } catch (err) {
       return [];
@@ -96,13 +95,12 @@ class ProductManager {
 
   async writeProducts(products) {
     try {
-      await fs.promises.writeFile(this.filePath, JSON.stringify(products));
+      await fs.writeFile(this.filePath, JSON.stringify(products));
     } catch (err) {
       throw new Error(`Error writing products to file: ${err}`);
     }
   }
 }
 
-module.exports = { ProductManager };
-
+module.exports = ProductManager;
 

@@ -1,14 +1,16 @@
 const express = require('express');
 const fs = require('fs');
 const { v4: uuidv4 } = require('uuid');
+const path = require('path');
 
 const cartsRouter = express.Router();
-const ProductManager = require("../ProductManager");
-const cartManager = new ProductManager("carts.json");
+const ProductManager = require('../ProductManager');
+const cartManager = new ProductManager(path.join(__dirname, '../../carts.json')); // Ruta al archivo carts.json
+
 let carts = [];
 
 try {
-  carts = JSON.parse(fs.readFileSync(path.join(__dirname, '../carts.json')));
+  carts = JSON.parse(fs.readFileSync(path.join(__dirname, '../../carts.json')));
 } catch (error) {
   console.log(`Error reading carts from file: ${error}`);
 }
@@ -18,12 +20,12 @@ cartsRouter.get('/', async (req, res) => {
     const products = await cartManager.getProducts();
     const limit = req.query.limit;
     if (!limit) {
-        return res.status(200).json(products);
+      return res.status(200).json(products);
     } else {
-        return res.status(200).json(products.slice(0, limit));
+      return res.status(200).json(products.slice(0, limit));
     }
   } catch (err) {
-    return res.status(500).json({ message: "Internal Server Error" });
+    return res.status(500).json({ message: 'Internal Server Error' });
   }
 });
 
@@ -34,7 +36,7 @@ cartsRouter.post('/', (req, res) => {
       products: [],
     };
     carts.push(newCart);
-    fs.writeFileSync(path.join(__dirname, '../carts.json'), JSON.stringify(carts, null, 2));
+    fs.writeFileSync(path.join(__dirname, '../../carts.json'), JSON.stringify(carts, null, 2));
     res.status(201).json(newCart);
   } catch (error) {
     res.status(500).json({ message: 'Internal Server Error' });
@@ -67,7 +69,7 @@ cartsRouter.post('/:cid/product/:pid', (req, res) => {
     cart.products.push({ id: productId, quantity });
   }
 
-  fs.writeFileSync(path.join(__dirname, '../carts.json'), JSON.stringify(carts, null, 2));
+  fs.writeFileSync(path.join(__dirname, '../../carts.json'), JSON.stringify(carts, null, 2));
   res.status(200).json(cart);
 });
 

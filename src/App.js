@@ -3,7 +3,7 @@ const { Server: HttpServer } = require("http");
 const { Server: SocketServer } = require("socket.io");
 
 const productRoutes = require("./Routers/productsRouter");
-const cartRoutes = require("./Routers/cartsRouter");
+const cartsRoutes = require("./Routers/cartsRouter");
 const hbsRoutes = require("./Routers/handlebarsRouter");
 const realTimeProdRoutes = require("./Routers/realtimeprodsRouter");
 
@@ -32,9 +32,9 @@ app.use("/public", express.static(path.join(__dirname, "/public")));
 // Using handlebars engine for templates
 app.engine(
   "handlebars",
-  exphbs({
+  exphbs.engine({
     defaultLayout: "main",
-    layoutsDir: path.join(__dirname, "views/layouts")
+    layoutsDir: path.join(__dirname, "views/layout")
   })
 );
 app.set("view engine", "handlebars");
@@ -42,7 +42,7 @@ app.set("views", path.join(__dirname, "views"));
 
 // Routes
 app.use("/api", productRoutes);
-app.use("/api", cartRoutes);
+app.use("/api", cartsRoutes);
 app.use("/", hbsRoutes);
 app.use("/realtimeproducts", realTimeProdRoutes);
 

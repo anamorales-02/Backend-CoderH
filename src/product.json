@@ -1,0 +1,32 @@
+[
+  {
+    "id": 5,
+    "title": "Jeans",
+    "description": "Jeans modernos y de alta calidad",
+    "price": 49.99,
+    "thumbnail": "https://example.com/jeans.jpg",
+    "code": "a105",
+    "stock": 15,
+    "status": true
+  },
+  {
+    "id": 6,
+    "title": "Sudadera con capucha",
+    "description": "Sudadera cómoda y abrigada",
+    "price": 29.99,
+    "thumbnail": "https://example.com/sudadera.jpg",
+    "code": "a106",
+    "stock": 25,
+    "status": true
+  },
+  {
+    "id": 7,
+    "title": "Sandalias",
+    "description": "Cómodas y de diseño excelente",
+    "price": 50,
+    "thumbnail": "https://example.com/sandalias.jpg",
+    "code": "a110",
+    "stock": 2,
+    "status": true
+  }
+]

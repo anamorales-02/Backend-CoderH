@@ -1,5 +1,5 @@
 <div class="container">
-  <h2 class="text-center my-4">Lista de Productos con Handlebars</h2>
+  <h2 class="text-center my-4">Lista de Productos</h2>
   <ul class="list-group">
     {{#each products}}
       <li class="list-group-item">
@@ -9,7 +9,7 @@
         <p>Precio: {{this.price}}</p>
         <p>Código: {{this.code}}</p>
         <p>Stock: {{this.stock}}</p>
-        <a href="{{this.thumbnail}}">Imagen del Producto</a>
+        <a href="{{this.thumbnail}}">Imagen</a>
       </li>
     {{/each}}
   </ul>

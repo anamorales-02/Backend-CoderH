@@ -1,104 +1,140 @@
-const fs = require("fs").promises;
-const path = require("path");
+const fs = require("fs");
 
 class ProductManager {
-  #lastId = 0;
+  constructor() {
+    this.path = "./product.json";
+    this.products = [];
+    this.productList = [
+      {
+        id: 4,
+        title: "Camiseta de algodón",
+        description: "Camiseta cómoda y ligera",
+        price: 15.99,
+        thumbnail: "https://example.com/camiseta.jpg",
+        code: "a104",
+        stock: 20,
+        status: true
+      },
+      {
+        id: 5,
+        title: "Jeans",
+        description: "Jeans modernos y de alta calidad",
+        price: 49.99,
+        thumbnail: "https://example.com/jeans.jpg",
+        code: "a105",
+        stock: 15,
+        status: true
+      },
+      {
+        id: 6,
+        title: "Sudadera con capucha",
+        description: "Sudadera cómoda y abrigada",
+        price: 29.99,
+        thumbnail: "https://example.com/sudadera.jpg",
+        code: "a106",
+        stock: 25,
+        status: true
+      }
+    ];
+  }
 
-  constructor(filename) {
-    this.filePath = path.join(__dirname, filename);
+  async getData() {
+    if (fs.existsSync(this.path)) {
+      const data = await fs.promises.readFile(this.path, "utf-8");
+      this.products = JSON.parse(data);
+    } else {
+      this.products = [...this.productList];
+      await fs.promises.writeFile(this.path, JSON.stringify(this.products, null, 2));
+    }
+
+    return this.products;
   }
 
   async addProduct(product) {
-    try {
-      const products = await this.getProducts();
-      const codeExists = products.some((p) => p.code === product.code);
-      if (codeExists) {
-        throw new Error("Product with the same code already exists");
-      }
+    await this.getData();
 
-      if (
-        !product.title ||
-        !product.description ||
-        !product.price ||
-        !product.thumbnail ||
-        !product.code ||
-        !product.stock
-      ) {
-        throw new Error("All fields are mandatory");
-      }
-
-      const newId = ++this.#lastId;
-
-      const newProduct = { id: newId, ...product };
-      products.push(newProduct);
-      await this.writeProducts(products);
-      return newProduct;
-    } catch (err) {
-      throw new Error("addProduct method failed");
+    if (
+      !product.title ||
+      !product.description ||
+      !product.price ||
+      !product.thumbnail ||
+      !product.code ||
+      !product.stock
+    ) {
+      return "The content of the fields is wrong.";
     }
+
+    if (this.products.some((item) => item.code === product.code)) {
+      return "Product already exists.";
+    }
+
+    const maxId =
+      this.products.length > 0
+        ? Math.max(...this.products.map((p) => p.id))
+        : 0;
+    const newId = maxId + 1;
+
+    const newProduct = { id: newId, ...product, status: true };
+    this.products.push(newProduct);
+
+    await fs.promises.writeFile(
+      this.path,
+      JSON.stringify(this.products, null, 2)
+    );
+
+    return "Product added successfully.";
   }
 
   async getProducts() {
-    try {
-      const data = await fs.readFile(this.filePath, "utf8");
-      return JSON.parse(data);
-    } catch (err) {
-      return [];
-    }
+    await this.getData();
+    return this.products;
   }
 
-  async getProductById(productId) {
-    try {
-      const products = await this.getProducts();
-      const product = products.find((p) => p.id === productId);
-      if (product) {
-        return product;
-      } else {
-        throw new Error("Product not found");
-      }
-    } catch (err) {
-      throw new Error("getProductById method failed");
+  async getProductById(id) {
+    await this.getData();
+    const product = this.products.find((p) => p.id === id);
+    if (!product) {
+      return "Product not found.";
     }
+    return product;
   }
 
-  async updateProduct(productId, update) {
-    try {
-      const products = await this.getProducts();
-      const productIndex = products.findIndex((p) => p.id === productId);
-      if (productIndex === -1) {
-        throw new Error("Product with the specified id not found");
-      }
+  async updateProduct(id, updatedProduct) {
+    await this.getData();
+    const productIndex = this.products.findIndex((p) => p.id === id);
 
-      const updatedProduct = { ...products[productIndex], ...update };
-      products[productIndex] = updatedProduct;
-      await this.writeProducts(products);
-      return updatedProduct;
-    } catch (err) {
-      throw new Error("updateProduct method failed");
+    if (productIndex === -1) {
+      return "Product not found.";
     }
+
+    this.products[productIndex] = {
+      ...this.products[productIndex],
+      ...updatedProduct,
+    };
+
+    await fs.promises.writeFile(
+      this.path,
+      JSON.stringify(this.products, null, 2)
+    );
+
+    return "Product updated successfully.";
   }
 
-  async deleteProduct(productId) {
-    try {
-      const products = await this.getProducts();
-      const productIndex = products.findIndex((p) => p.id === productId);
-      if (productIndex === -1) {
-        throw new Error("Product not found");
-      }
+  async deleteProduct(id) {
+    await this.getData();
+    const productIndex = this.products.findIndex((p) => p.id === id);
 
-      products.splice(productIndex, 1);
-      await this.writeProducts(products);
-    } catch (err) {
-      throw new Error("deleteProduct method failed");
+    if (productIndex === -1) {
+      return "Product not found.";
     }
-  }
 
-  async writeProducts(products) {
-    try {
-      await fs.writeFile(this.filePath, JSON.stringify(products));
-    } catch (err) {
-      throw new Error(`Error writing products to file: ${err}`);
-    }
+    this.products.splice(productIndex, 1);
+    await fs.promises.writeFile(
+      this.path,
+      JSON.stringify(this.products, null, 2)
+    );
+
+    return "Product deleted successfully.";
   }
 }
 

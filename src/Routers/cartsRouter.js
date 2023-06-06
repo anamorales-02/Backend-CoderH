@@ -4,7 +4,7 @@ const { v4: uuidv4 } = require('uuid');
 const path = require('path');
 
 const cartsRouter = express.Router();
-const ProductManager = require('../ProductManager');
+const ProductManager = require('../dao/ProductManager');
 const cartManager = new ProductManager(path.join(__dirname, '../../carts.json')); // Ruta al archivo carts.json
 
 let carts = [];

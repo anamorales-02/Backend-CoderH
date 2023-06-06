@@ -1,3 +1,6 @@
+import { __dirname, __filename, connectMongo } from './utils.js';
+connectMongo();
+
 const express = require("express");
 const { Server: HttpServer } = require("http");
 const { Server: SocketServer } = require("socket.io");
@@ -5,9 +8,9 @@ const { Server: SocketServer } = require("socket.io");
 const productRoutes = require("./Routers/productsRouter");
 const cartsRoutes = require("./Routers/cartsRouter");
 const hbsRoutes = require("./Routers/handlebarsRouter");
-const realTimeProdRoutes = require("./Routers/realtimeprodsRouter");
+const realTimeProdRoutes = require("./Routers/realTimeProducts.Router");
 
-const ProductManager = require("./ProductManager");
+const ProductManager = require("./dao/ProductManager.js");
 const data = new ProductManager("productsDB");
 
 const exphbs = require("express-handlebars");

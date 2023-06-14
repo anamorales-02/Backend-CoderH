@@ -1,14 +1,19 @@
+import { Schema, model } from 'mongoose'
 
-//Modificar
-import { Schema, model } from "mongoose";
+export const cartSchema = new Schema({
+  products: [
+    {
+      productId: {
+        type: Schema.Types.ObjectId,
+        ref: 'products',
+        required: true
+      },
+      quantity: {
+        type: Number,
+        default: 1
+      }
+    }
+  ]
+})
 
-const cartSchema = new Schema({
-    products: [
-        {
-            product: { type: mongoose.Schema.Types.ObjectId, ref: "products" },
-            quantity: { type: Number, default: 0 },
-        }
-    ]
-});
-
-export const CartModel = model('carts', cartSchema);
+export const CartModel = model('carts', cartSchema)

@@ -1,25 +1,24 @@
-import { __dirname, __filename, connectMongo } from './utils.js';
-connectMongo();
-
-const express = require("express");
-const { Server: HttpServer } = require("http");
-const { Server: SocketServer } = require("socket.io");
-
-const productRoutes = require("./Routers/productsRouter");
-const cartsRoutes = require("./Routers/cartsRouter");
-const hbsRoutes = require("./Routers/handlebarsRouter");
-const realTimeProdRoutes = require("./Routers/realTimeProducts.Router");
+import { engine } from 'express-handlebars'
+import express from "express";
+import productRoutes from "./Routers/productsRouter.js";
+const cartsRoutes = require('./Routers/cartsRouter'); 
+import hbsRoutes from "./Routers/handlebarsRouter.js";
+import realTimeProdRoutes from "./Routers/realTimeProducts.Router.js";
+import { connectMongo, connectSocket } from './utils.js';
 
 const ProductManager = require("./dao/ProductManager.js");
 const data = new ProductManager("productsDB");
 
-const exphbs = require("express-handlebars");
-const path = require("path");
+import exphbs from "express-handlebars";
+import path from "path";
 
 const PORT = 8080;
 const app = express();
-const httpServer = new HttpServer(app);
-const io = new SocketServer(httpServer);
+const httpServer = createHttpServer(app);
+const io = createSocketServer(httpServer);
+
+connectMongo(); // Conecta a la base de datos MongoDB
+connectSocket(httpServer); // Conecta el servidor de sockets
 
 const server = httpServer.listen(PORT, () =>
   console.log(`📢 Server listening on port: ${PORT}`)

@@ -1,32 +1,47 @@
-import path from "path";
-import { fileURLToPath } from "url";
-export const __filename = fileURLToPath(import.meta.url);
-export const __dirname = path.dirname(__filename);
+import mongoose from 'mongoose';
+import { Server } from 'socket.io';
+import { ProductModel } from '../src/models/productsModel.js';
+import { MessageModel } from '../src/models/messagesModel.js';
 
-
-import multer from "multer";
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, __dirname + "/public");
-  },
-  filename: (req, file, cb) => {
-    cb(null, file.originalname);
-  },
-});
-export default __dirname;
-export const uploader = multer({ storage });
-
-
-
-import { connect } from "mongoose";
 export async function connectMongo() {
   try {
-    await connect(
-      "mongodb+srv://akmorales02:xn2xxYykPwDiFrOD@mongocoder.v2vc0us.mongodb.net/"
+    await mongoose.connect(
+      'mongodb+srv://akmorales02:<password>@mongocoder.v2vc0us.mongodb.net/?retryWrites=true&w=majority'
     );
-    console.log("plug to mongo!");
+    console.log('Connected to MongoDB!');
   } catch (e) {
     console.log(e);
-    throw "can not connect to the db";
+    throw 'Cannot connect to the database';
   }
+}
+
+export function connectSocket(httpServer) {
+  const io = new Server(httpServer);
+
+  io.on('connection', async (socket) => {
+    console.log('A socket connection opened: ' + socket.id);
+
+    const products = await ProductModel.find({});
+    io.emit('products', products);
+
+    socket.on('addProduct', async (product) => {
+      try {
+        const newProduct = await ProductModel.create(product);
+        io.emit('productAdded', newProduct);
+      } catch (error) {
+        console.error(error);
+      }
+    });
+
+    socket.on('product:delete', async (id) => {
+      await ProductModel.findByIdAndDelete(id);
+      io.emit('product:deleted', id);
+    });
+
+    socket.on('msg-front-to-back', async (msg) => {
+      const msgCreated = await MessageModel.create(msg);
+      const msgs = await MessageModel.find({});
+      io.emit('msg-back-to-front', msgs);
+    });
+  });
 }

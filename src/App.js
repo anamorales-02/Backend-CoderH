@@ -1,9 +1,8 @@
 import { engine } from 'express-handlebars'
 import express from "express";
-import productRoutes from "./Routers/productsRouter.js";
-const cartsRoutes = require('./Routers/cartsRouter'); 
-import hbsRoutes from "./Routers/handlebarsRouter.js";
-import realTimeProdRoutes from "./Routers/realTimeProducts.Router.js";
+import { productsRouter } from './routes/productsRouter.js'
+import { cartRouter } from './routes/cartsRouter.js'
+import { clientRouter } from './routes/clientRouter.js';
 import { connectMongo, connectSocket } from './utils.js';
 
 const ProductManager = require("./dao/ProductManager.js");
@@ -43,9 +42,9 @@ app.set("view engine", "handlebars");
 app.set("views", path.join(__dirname, "views"));
 
 // Routes
-app.use("/api", productRoutes);
+app.use("/api", productsRoutes);
 app.use("/api", cartsRoutes);
-app.use("/", hbsRoutes);
+app.use("/", clientRouter);
 app.use("/realtimeproducts", realTimeProdRoutes);
 
 io.on("connection", (socket) => {

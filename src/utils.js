@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 import { Server } from 'socket.io';
-import { ProductModel } from '../src/models/productsModel.js';
-import { MessageModel } from '../src/models/messagesModel.js';
+import { ProductModel } from '../src/dao/models/productsModel.js';
+import { MessageModel } from '../src/dao/models/messagesModel.js';
 
 export async function connectMongo() {
   try {

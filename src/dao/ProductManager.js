@@ -1,8 +1,8 @@
-const fs = require('fs');
+import fs from 'fs';
 
-class ProductManager {
+export class ProductManager {
   constructor(path) {
-    this.path = path;
+    this.path = path
   }
 
   async getProducts() {

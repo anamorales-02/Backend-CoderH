@@ -1,5 +1,5 @@
-import { CartModel } from '../models/carts.model.js';
-import { ProductModel } from '../models/products.model.js';
+import { CartModel } from '../dao/models/cartsModel.js';
+import { ProductModel } from '../dao/models/productsModel.js';
 
 export default class CartService {
   async createCart() {

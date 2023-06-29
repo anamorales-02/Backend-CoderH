@@ -1,22 +1,22 @@
 import express from 'express';
-import ProductService from '../services/productsService.js';
+import ProductsService from '../services/productsService.js';
 
-export const productRouter = express.Router();
-const productService = new ProductService();
+export const productsRouter = express.Router();
+const productsService = new ProductsService();
 
-productRouter.get('/', async (req, res) => {
+productsRouter.get('/', async (req, res) => {
   try {
-    const products = await productService.getAllProducts();
+    const products = await productsService.getAllProducts();
     res.status(200).json({ status: 'success', payload: products });
   } catch (error) {
     res.status(500).json({ status: 'error', message: 'Error getting products' });
   }
 });
 
-productRouter.get('/:id', async (req, res) => {
+productsRouter.get('/:id', async (req, res) => {
   try {
     const productId = req.params.id;
-    const product = await productService.getProductById(productId);
+    const product = await productsService.getProductById(productId);
     if (!product) {
       return res.status(404).json({ status: 'error', message: `Product ${productId} not found` });
     }
@@ -26,35 +26,35 @@ productRouter.get('/:id', async (req, res) => {
   }
 });
 
-productRouter.post('/', async (req, res) => {
+productsRouter.post('/', async (req, res) => {
   try {
     const { name, price, description } = req.body;
-    const product = await productService.createProduct({ name, price, description });
+    const product = await productsService.createProduct({ name, price, description });
     res.status(201).json({ status: 'success', payload: product });
   } catch (error) {
     res.status(500).json({ status: 'error', message: 'Error creating product' });
   }
 });
 
-productRouter.put('/:id', async (req, res) => {
+productsRouter.put('/:id', async (req, res) => {
   try {
     const productId = req.params.id;
     const { name, price, description } = req.body;
-    const updatedProduct = await productService.updateProduct(productId, { name, price, description });
+    const updatedProduct = await productsService.updateProduct(productId, { name, price, description });
     res.status(200).json({ status: 'success', payload: updatedProduct });
   } catch (error) {
     res.status(500).json({ status: 'error', message: 'Error updating product' });
   }
 });
 
-productRouter.delete('/:id', async (req, res) => {
+productsRouter.delete('/:id', async (req, res) => {
   try {
     const productId = req.params.id;
-    await productService.deleteProduct(productId);
+    await productsService.deleteProduct(productId);
     res.status(200).json({ status: 'success', message: 'Product deleted' });
   } catch (error) {
     res.status(500).json({ status: 'error', message: 'Error deleting product' });
   }
 });
 
-export default productRouter;
+export default productsRouter;

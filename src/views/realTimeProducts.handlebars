@@ -1,145 +1,43 @@
-<!-- Dynamic List -->
-<div id="productList">
-  <div class="row">
-    <div class="col-md-8">
-      <table class="table table-light">
-        <thead>
-          <tr>
-            <th scope="col">ID</th>
-            <th scope="col">Nombre</th>
-            <th scope="col">Descripción</th>
-            <th scope="col">Precio</th>
-            <th scope="col">Código</th>
-            <th scope="col">Stock</th>
-            <th scope="col">Categoría</th>
-            <th scope="col">Foto</th>
-            <th scope="col">Borrar</th>
-          </tr>
-        </thead>
-        <tbody class="productListUpdated">
-          {{#each products}}
-            <tr>
-              <th scope="row">{{this.id}}</th>
-              <td>{{this.title}}</td>
-              <td>{{this.description}}</td>
-              <td>{{this.price}}</td>
-              <td>{{this.code}}</td>
-              <td>{{this.stock}}</td>
-              <td>{{this.category}}</td>
-              <td><img
-                  src="{{this.thumbnail}}"
-                  alt="{{this.id}}"
-                  title="Foto de {{this.title}}"
-                  style="width: 50px; min-height: 100%; max-height: 50px;"
-                /></td>
-              <td>
-                <button
-                  type="button"
-                  class="btn btn-danger"
-                  onclick="deleteProduct({{this.id}})"
-                >X</button>
-              </td>
-            </tr>
-          {{/each}}
-        </tbody>
-      </table>
-    </div>
-    <div class="col-md-4">
-      <h2 class="text-center my-4">Añadir Nuevo Producto</h2>
-      <form id="form-products" style="margin: auto">
-        <div style="margin-bottom: 16px">
-          <div class="col-md-auto mx-3">
-            <label for="title">Titulo:</label>
-            <br />
-            <input
-              type="text"
-              name="title"
-              id="form-title"
-              style="margin-bottom: 16px"
-              class="form-control"
-              placeholder="Agregar un título al producto"
-            />
-          </div>
-          <div class="col-md-auto mx-3">
-            <label for="description">Descripción:</label>
-            <br />
-            <input
-              type="text"
-              name="description"
-              id="form-description"
-              style="margin-bottom: 16px"
-              class="form-control"
-              placeholder="Agregar una descripción al producto"
-            />
-          </div>
-          <div class="col-md-auto mx-3">
-            <label for="price">Precio:</label>
-            <br />
-            <input
-              type="number"
-              name="price"
-              id="form-price"
-              style="margin-bottom: 16px"
-              step="1"
-              class="form-control"
-              placeholder="Agregar un precio al producto"
-            />
-          </div>
-          <div class="col-md-auto mx-3">
-            <label for="code">Código:</label>
-            <br />
-            <input
-              type="text"
-              name="code"
-              id="form-code"
-              style="margin-bottom: 16px"
-              class="form-control"
-              placeholder="Agregar un código al producto"
-            />
-          </div>
-           <div class="col-md-auto mx-3">
-            <label for="stock"> Stock: </label>
-            <br />
-            <input
-              type="number"
-              name="stock"
-              id="form-stock"
-              style="margin-bottom: 16px"
-              step="1"
-              class="form-control"
-              placeholder="Agregar stock al producto"
-            />
-          </div>
-
-          <div class="col-md-auto mx-3">
-            <label for="thumbnail"> URL de la Imagen: </label>
-            <br />
-            <input
-              type="text"
-              name="thumbnail"
-              id="form-thumbnail"
-              style="margin-bottom: 16px"
-              class="form-control"
-              placeholder="Agregar una URL valida"
-            />
-          </div>
-          <div
-            style="display: flex; justify-content: center; align-items: center"
-          >
-            <input
-              type="submit"
-              value="Crear producto"
-              class="btn btn-primary"
-            />
-          </div>
+<div>
+    <h1>Product List with socket</h1>
+    <div id="product-container" class="product-list">
+        {{#each products}}
+        <div class="product" id="{{this._id}}">
+            <h2>{{this.title}}</h2>
+            <img src="{{this.thumbnails}}" alt="">
+            <p><strong>Price:</strong> ${{this.price}}</p>
+            <p><strong>Stock:</strong> {{this.stock}}</p>
+            <button class="delete-btn" onclick="deleteProductWithSocket('{{this._id}}')">Delete</button>
         </div>
-      </form>
+        {{/each}}
     </div>
-  </div>
 </div>
-<script
-  src="https://cdn.jsdelivr.net/npm/handlebars@latest/dist/handlebars.js"
-></script>
-<script src="/socket.io/socket.io.js"></script>
-<script src="public/index.js"></script>
 
+<form class="form" action="/realtimeProducts" method="POST">
+    <div class="form-group">
+        <label for="title">Title:</label>
+        <input type="text" id="title" name="title" required>
+    </div>
+    <div class="form-group">
+        <label for="description">Description:</label>
+        <textarea id="description" name="description" required></textarea>
+    </div>
+    <div class="form-group">
+        <label for="price">Price:</label>
+        <input type="number" id="price" name="price" step="0.01" required>
+    </div>
+    <div class="form-group">
+        <label for="code">Code:</label>
+        <input type="text" id="code" name="code" required>
+    </div>
+    <div class="form-group">
+        <label for="stock">Stock:</label>
+        <input type="number" id="stock" name="stock" required>
+    </div>
+    <button type="submit" class="btn btn-primary">Agregar</button>
+</form>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+    const socket = io()
+</script>

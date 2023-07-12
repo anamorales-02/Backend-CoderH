@@ -1,12 +1,12 @@
 import mongoose from 'mongoose';
 import { Server } from 'socket.io';
-import { ProductModel } from '../src/dao/models/productsModel.js';
-import { MessageModel } from '../src/dao/models/messagesModel.js';
+import { ProductModel } from '../dao/models/productsModel.js';
+import { MessageModel } from '../dao/models/messagesModel.js';
 
 export async function connectMongo() {
   try {
     await mongoose.connect(
-      'mongodb+srv://akmorales02:<password>@mongocoder.v2vc0us.mongodb.net/?retryWrites=true&w=majority'
+      'mongodb+srv://akmorales02:xn2xxYykPwDiFrOD@mongocoder.v2vc0us.mongodb.net/?retryWrites=true&w=majority'
     );
     console.log('Connected to MongoDB!');
   } catch (e) {
@@ -45,3 +45,5 @@ export function connectSocket(httpServer) {
     });
   });
 }
+export const createHash = (password) => bcrypt.hashSync(password, bcrypt.genSaltSync(10))
+export const isValidPassword = (password, hashPassword) => bcrypt.compareSync(password, hashPassword)

@@ -4,6 +4,7 @@ import { UserModel } from '../dao/models/usersModel.js';
 import { createHash, isValidPassword } from './utils.js';
 import GitHubStrategy from 'passport-github2';
 import fetch from 'node-fetch';
+import config from './config.js';
 
 const LocalStrategy = local.Strategy;
 
@@ -69,9 +70,9 @@ export function initPassport() {
     'github',
     new GitHubStrategy(
       {
-        clientID: 'Iv1.f531d48c209f3523',
-        clientSecret: '0977839701230ab4b6d6073b386231b14b2467bb',
-        callbackURL: 'http://localhost:8080/api/sessions/githubcallback'
+        clientID: config.clientId,
+        clientSecret: config.clientSecret,
+        callbackURL: 'http://localhost:8080/api/sessions/githubcallback',
       },
       async (accesToken, _, profile, done) => {
         try {

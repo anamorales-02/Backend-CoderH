@@ -1,102 +1,102 @@
 import fs from 'fs';
+import { v4 as uuidv4 } from 'uuid';
 
-export class ProductManager {
-  constructor(path) {
-    this.path = path
-  }
-
-  async getProducts() {
-    try {
-      if (fs.existsSync(this.path)) {
-        const prodsStr = await fs.promises.readFile(this.path, 'utf-8');
-        return JSON.parse(prodsStr);
-      }
-      await fs.promises.writeFile(this.path, JSON.stringify([]));
-      return [];
-    } catch (err) {
-      throw new Error(err + ' Error getting products');
+class ProductManager {
+    constructor(filePath) {
+        this.filePath = filePath;
+        this.products = [];
     }
-  }
 
-  async addProduct(newProduct) {
-    try {
-      let products = await this.getProducts();
-      const existingProduct = products.find((p) => p.code === newProduct.code);
-      if (existingProduct) {
-        return 'Code already exists';
-      }
-      if (
-        !newProduct.title ||
-        !newProduct.description ||
-        !newProduct.price ||
-        !newProduct.thumbnail ||
-        !newProduct.code ||
-        !newProduct.status ||
-        !newProduct.category ||
-        !newProduct.stock
-      ) {
-        return 'Fields missing';
-      }
-      const id = products.length > 0 ? products[products.length - 1].id + 1 : 1;
-      const newProdWithId = { id, ...newProduct };
-      products.push(newProdWithId);
-      const prodString = JSON.stringify(products, null, 2);
-      await fs.promises.writeFile(this.path, prodString);
-      return newProdWithId;
-    } catch (error) {
-      throw new Error(error + ' Error adding product');
+    async retrieveProducts() {
+        if (fs.existsSync(this.filePath)) {
+            const productsString = await fs.promises.readFile(this.filePath, 'utf-8');
+            const products = JSON.parse(productsString);
+            this.products = products;
+        } else {
+            await fs.promises.writeFile(this.filePath, '[]');
+            const productsString = await fs.promises.readFile(this.filePath, 'utf-8');
+            const products = JSON.parse(productsString);
+            this.products = products;
+        }
+        return this.products;
     }
-  }
 
-  async getProductById(id) {
-    try {
-      const products = await this.getProducts();
-      const productById = products.find((elem) => elem.id === id);
-      if (!productById) {
-        return `Product with id ${id} not found`;
-      }
-      return productById;
-    } catch (err) {
-      throw new Error(err);
-    }
-  }
+    async addProduct(newProduct) {
+        let id = uuidv4();
 
-  async updateProduct(id, field, newValue) {
-    try {
-      const products = await this.getProducts();
-      const indexToUpdate = products.findIndex((elem) => elem.id === id);
-      if (indexToUpdate === -1) {
-        return `Product id ${id} does not exist`;
-      }
-      if (
-        !['title', 'description', 'price', 'thumbnail', 'status', 'category', 'code', 'stock'].includes(field)
-      ) {
-        return `Field error: ${field}`;
-      }
-      products[indexToUpdate][field] = newValue;
-      const prodString = JSON.stringify(products, null, 2);
-      await fs.promises.writeFile(this.path, prodString);
-      return products[indexToUpdate];
-    } catch (err) {
-      throw new Error(err + ' Update error');
+        try {
+            let products = await this.retrieveProducts();
+            if (
+                !newProduct.title ||
+                !newProduct.description ||
+                !newProduct.price ||
+                !newProduct.thumbnail ||
+                !newProduct.code ||
+                !newProduct.category ||
+                !newProduct.stock
+            ) {
+                return 'Complete all fields';
+            } else {
+                if (products.some((product) => product.code === newProduct.code)) {
+                    return { error: `The product with SKU: ${newProduct.code} already exists` };
+                } else {
+                    newProduct.stock = parseInt(newProduct.stock);
+                    newProduct.price = parseInt(newProduct.price);
+                    newProduct.id = id;
+                    products.push(newProduct);
+                    const productsString = JSON.stringify(products, null, 2);
+                    await fs.promises.writeFile(this.filePath, productsString);
+                    return newProduct;
+                }
+            }
+        } catch (error) {
+            return new Error(error);
+        }
     }
-  }
 
-  async deleteProduct(id) {
-    try {
-      const products = await this.getProducts();
-      const filteredProds = products.filter((elem) => elem.id !== id);
-      if (filteredProds.length === products.length) {
-        return `Product id ${id} does not exist`;
-      } else {
-        const prodString = JSON.stringify(filteredProds, null, 2);
-        await fs.promises.writeFile(this.path, prodString);
-        return { msg: 'Product deleted successfully' };
-      }
-    } catch (err) {
-      throw new Error(err + ' Product does not exist');
+    async getProductById(idSearch) {
+        try {
+            let data = await this.retrieveProducts();
+            let id = parseInt(idSearch);
+            const productById = data.find(element => element.id === id);
+            return productById;
+        } catch (error) {
+            throw new Error(error);
+        }
     }
-  }
+
+    async updateProduct(updateId, dataUpdate) {
+        let products = await this.retrieveProducts();
+        const productIndex = products.findIndex(element => element.id === updateId);
+        if (productIndex === -1) {
+            return { error: 'Product not found' };
+        } else {
+            if (typeof (dataUpdate) === 'object') {
+                products[productIndex] = { ...products[productIndex], ...dataUpdate, id: products[productIndex].id };
+                const productsString = JSON.stringify(products, null, 2);
+                await fs.promises.writeFile(this.filePath, productsString);
+                return products[productIndex];
+            } else {
+                return { error: 'You must send an object' };
+            }
+        }
+    }
+
+    async deleteProduct(deleteId) {
+        try {
+            let id = deleteId;
+            let products = await this.retrieveProducts();
+            const productIndex = products.findIndex(element => element.id === id);
+            if (productIndex >= 0) {
+                products = products.filter((item) => item.id !== id);
+                const productsString = JSON.stringify(products, null, 2);
+                await fs.promises.writeFile(this.filePath, productsString);
+                return 'Product deleted';
+            }
+        } catch (error) {
+            return;
+        }
+    }
 }
 
-
+export default new ProductManager('./src/persistencia/products.json');

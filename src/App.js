@@ -1,5 +1,10 @@
 import express from 'express';
 import http from 'http';
+
+import __dirname from "./utils.js";
+import swaggerJSDoc from "swagger-jsdoc";
+import swaggerUiExpress from "swagger-ui-express";
+
 import { productsRouter } from './Routers/productsRouter.js';
 import { cartRouter } from './Routers/cartsRouter.js';
 import { clientRouter } from './Routers/clientRouter.js';
@@ -54,6 +59,21 @@ session({
 initPassport()
 app.use(passport.initialize())
 app.use(passport.session())
+
+const swaggerOptions = {
+  definition: {
+    openapi: "3.0.1",
+    info: {
+      title: "Documentacion Pizzas",
+      description: "Este proyecto no es de pizzas, es de usuarios",
+    },
+  },
+  apis: [`${__dirname}/docs/**/*.yaml`],
+};
+
+const specs = swaggerJSDoc(swaggerOptions);
+app.use("/apidocs", swaggerUiExpress.serve, swaggerUiExpress.setup(specs));
+
 
 // Middlewares
 app.use(express.json());

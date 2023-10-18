@@ -5,13 +5,13 @@ import { isLogged, isUser } from '../middlewares/auth.js';
 const customCartRouter = Router();
 
 // Ruta para mostrar todos los carritos  
-customCartRouter.get('/custom/carts', isUser, cartsController.getCartsList);
+customCartRouter.get('/custom/carts', isUser, cartsController.createCart);
 
 // Ruta para mostrar productos en un carrito específico  
 customCartRouter.get('/custom/carts/:cid', isUser, cartsController.getProductsByCartId);
 
 // Ruta para crear un nuevo carrito  
-customCartRouter.post('/custom/carts', isUser, cartsController.addCart);
+customCartRouter.post('/custom/carts/new', isUser, cartsController.addCart);
 
 // Ruta para agregar un producto a un carrito  
 customCartRouter.put('/custom/carts/:cid/products/:pid', isUser, cartsController.addProductToCart); 

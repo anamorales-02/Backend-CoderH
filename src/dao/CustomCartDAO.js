@@ -27,7 +27,7 @@ export class CustomCartDAO {
       throw (`Error creating a new cart`);
     }
   }
- 
+
   async addProductToCart(cartId, cart) {
     try {
       const updatedCart = await CartModel.findByIdAndUpdate(cartId, cart, { new: true });

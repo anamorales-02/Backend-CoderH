@@ -3,10 +3,10 @@ import {  productsService } from '../services/productsService.js';
 
 class CartsController {
 
-    async getCartsList(req, res) {
+    async createCart(req, res) {
         try {
             const limit = req.query.limit;
-            const carts = await cartService.getCartsList(limit);
+            const carts = await cartService.createCart(limit);
             res.status(200).json({ carts: carts });
         } catch (err) {
             res.status(500).json({ Error: `${err}` });
@@ -55,6 +55,7 @@ class CartsController {
 
     async deleteProductFromCart(req, res) {
         try {
+            console.log("deleteProductFromCart")
             const cid = req.params.cid;
             const pid = req.params.pid;
             const productQuantity = req.body.quantity;
@@ -104,7 +105,7 @@ class CartsController {
             const attName = req.query.attName || '';
             const sessionUser = req.session.user;
             let displayedProducts;
-            const products = await productService.getProductsPaginate(limit, page, filter, sort, attName);
+            const products = await productsService.getProductsPaginate(limit, page, filter, sort, attName);
             const filteredProducts = products.docs.filter(product => product.owner !== sessionUser._id);
             sessionUser.isPremium === false ? displayedProducts = products.docs : displayedProducts = filteredProducts;
             const oldCartUnfinished = await cartService.getProductsByCartId(sessionUser.idCart);

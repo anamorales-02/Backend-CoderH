@@ -1,9 +1,7 @@
 import { ProductModel } from './models/productsModel.js';
 
-
 export class CustomProductDAO {
   async getProducts(limit) {
-    console.log(limit);
     try {
       const products = await ProductModel.find().limit(5).lean().exec();
       return products;

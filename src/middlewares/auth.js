@@ -1,14 +1,35 @@
-export function isUser(req, res, next) {
-    if (req.session?.user?.email || req.session?.passport?.user) {
-      return next()
-    }
-    return res.status(401).render('error', { error: 'Error de autenticación!' })
+export function isLogged(req, res, next) {
+  if (req.session && req.session.user && req.session.user.email) {
+    next();
+  } else {
+    res.status(401).render('error', { error: 'Must be logged to access' });
   }
-  
-  export function isAdmin(req, res, next) {
-    if (req.session?.user?.isAdmin) {
-      return next()
-    }
-    return res.status(403).render('error', { error: 'Error de autorización!' })
+}
+
+ export function isUser(req, res, next) {
+  console.log(req.session)
+  if (req.session && req.session.user && req.session.user.isAdmin === false) {
+    next();
+  } else {
+    res.status(401).render('error', { error: 'Authorization error' });
   }
+}
+
+export function isAdmin(req, res, next) {
+  if (req.session && req.session.user && req.session.user.role === 'admin') {
+    next();
+  } else {
+    res.status(403).render('error', { error: 'Must be an admin' });
   
+  }
+}
+export function isPremium(req, res, next) {
+  if (
+     (req.session && req.session.user && req.session.user.isPremium) ||
+     (req.session && req.session.user && req.session.user.role === 'admin')
+   ) {
+      next();
+  } else {
+    res.status(403).render('error', { error: 'Must be Premium User' });
+    }
+}

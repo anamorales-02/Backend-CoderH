@@ -1,7 +1,44 @@
-<h1>LOGIN</h1>
-<form action="/auth/login" method="POST">
-    <input type="text" name="email" placeholder="email">
-    <input type="password" name="password" placeholder="password">
-    <input type="submit" value="Login">
-</form>
-<a href="/auth/register">No tengo una cuenta</a>
+<div class="container">
+  <div
+    class="card col-6 -dashboard"
+    style="margin-top: 10vh; margin-bottom: 10vh;"
+  >
+    <div class="card-header">
+      <h2>Bienvenidos</h2>
+    </div>
+    <div class="card-body card-body-style">
+      <div class="col-8">
+        <form action="/auth/login" method="POST">
+          <div class="input-group mb-3">
+            <div class="input-group-prepend">
+            </div>
+            <input
+              type="text"
+              class="form-control inputForms"
+              name="email"
+              placeholder="Email"
+              aria-label="Email"
+              aria-describedby="basic-addon1"
+            />
+          </div>
+          <div class="input-group mb-3">
+            <div class="input-group-prepend">
+            </div>
+            <input
+              type="password"
+              class="form-control inputForms"
+              name="password"
+              placeholder="Password"
+              aria-label="Password"
+              aria-describedby="basic-addon2"
+            />
+          </div>
+          <input class="btn btn-info" type="submit" value="Login" />
+          <a class="btn btn-outline-info" href="/auth/register">Registrarse</a>
+        </form>
+        <br />
+        <a href="/api/sessions/github" class="btn btn-info">Iniciar con Github</a>
+      </div>
+    </div>
+  </div>
+</div>

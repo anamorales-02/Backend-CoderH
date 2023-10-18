@@ -1,82 +1,34 @@
 import express from 'express';
-import { isAdmin, isUser } from '../middlewares/auth.js';
+import { isAdmin, isLogged } from '../middlewares/auth.js';
 import passport from 'passport';
+import { customUsersController } from '../controller/usersController.js';
 
-export const authRouter = express.Router();
+const authRouter = express.Router();
 
-authRouter.get('/logout', (req, res) => {
-  req.session.destroy((err) => {
-    if (err) {
-      return res.status(500).render('error', { error: 'No se pudo cerrar la sesión' });
-    }
-    return res.redirect('/auth/login');
-  });
-});
+// Ruta para registrarse
+authRouter.get('/auth/register', customUsersController.register);
+authRouter.post('/auth/register', passport.authenticate('register', { failureRedirect: '/auth/failregister' }), customUsersController.registerPassport);
+authRouter.post('/auth/register', customUsersController.registerFail);
 
-authRouter.get('/profile', isUser, (req, res) => {
-  const user = req.session.user;
-  return res.render('profile', { user });
-});
+// Ruta para iniciar sesión
+authRouter.get('/auth/login', customUsersController.login);
+authRouter.post('/auth/login', passport.authenticate('login', { failureRedirect: '/auth/faillogin' }), customUsersController.loginPassport);
+authRouter.post('/auth/login', customUsersController.loginFail);
 
-authRouter.get('/administration', isUser, isAdmin, (req, res) => {
-  return res.send('Datos solo visibles por administradores');
-});
+// Ruta para cerrar sesión
+authRouter.get('/auth/logout', customUsersController.logOut);
 
-authRouter.get('/login', (req, res) => {
-  return res.render('login', {});
-});
+// Ruta para ver el perfil
+authRouter.get('/auth/profile', isLogged, customUsersController.profile);
 
-authRouter.post('/login', passport.authenticate('login', { failureRedirect: '/auth/faillogin' }), async (req, res) => {
-  if (!req.user) {
-    return res.json({ error: 'Credenciales inválidas' });
-  }
-  try {
-    req.session.user = {
-      _id: req.user._id,
-      email: req.user.email,
-      firstName: req.user.firstName,
-      lastName: req.user.lastName,
-      isAdmin: req.user.isAdmin
-    };
-    return res.json({ msg: 'ok', payload: req.user });
-  } catch (e) {
-    console.log(e);
-    return res.status(400).render('error', { error: 'No se pudo iniciar sesión' });
-  }
-});
+// Ruta para el panel de control
+authRouter.get('/auth/dashboard', isLogged, customUsersController.dashboard);
 
-authRouter.get('/register', (req, res) => {
-  return res.render('register', {});
-});
+// Ruta para cambiar a usuario premium
+authRouter.get('/api/users/upgrade/:uid', isLogged, customUsersController.changePremiumUser);
 
-authRouter.post('/register', passport.authenticate('register', { failureRedirect: '/auth/failregister' }), async (req, res) => {
-  if (!req.user) {
-    return res.json({ error: 'Algo salió mal' });
-  }
-  try {
-    req.session.user = {
-      _id: req.user._id,
-      email: req.user.email,
-      firstName: req.user.firstName,
-      lastName: req.user.lastName,
-      isAdmin: req.user.isAdmin
-    };
+// Ruta para cambiar el rol del usuario
+authRouter.get('/api/users/role/:uid', customUsersController.changeUserRole);
 
-    return res.json({ msg: 'ok', payload: req.user });
-  } catch (e) {
-    console.log(e);
-    return res.status(400).render('error', { error: 'No se pudo crear el usuario. Intente con otro correo electrónico' });
-  }
-});
+export default authRouter;
 
-authRouter.get('/failregister', async (req, res) => {
-  return res.json({ error: 'Error al registrarse' });
-});
-
-authRouter.get('/session', (req, res) => {
-  return res.send(JSON.stringify(req.session));
-});
-
-authRouter.get('/faillogin', async (req, res) => {
-  return res.json({ error: 'Error al iniciar sesión' });
-});

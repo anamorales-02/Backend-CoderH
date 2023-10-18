@@ -1,7 +1,9 @@
-import express from 'express'
+import { Router } from 'express';
+import { conversationsController } from '../controller/chatController.js';
+import { isLogged } from '../middlewares/auth.js';
 
-export const chatRouter = express.Router()
+const routerChat = Router();
 
-chatRouter.get('/', async (req, res) => {
-  return res.render('chat', {})
-})
+routerChat.get("/chat", isLogged, conversationsController.getChatPage);
+
+export default routerChat;

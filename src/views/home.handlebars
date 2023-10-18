@@ -1,1 +1,57 @@
-<h1>home</h1>
+<div class="container">
+  <div class="card col-8 -dashboard" style="margin-top: 10vh; margin-bottom: 10vh;">
+    <div class="card-header">
+      <div>
+        <h2>Bienvenido {{user.firstName}}</h2>
+        <h4><a href="/auth/logout">Salir</a></h4>
+      </div>
+    </div>
+    <div class="card-body card-body-style">
+      <div class="row">
+        <div class="col-6">
+          <div class="card -dashboard" style="width: 18rem;">
+            <div class="card-body">
+              <a href="/realtimeproducts" class="card-link btn btn-info">Gestionar Productos</a>
+            </div>
+          </div>
+        </div>
+        <div class="col-6">
+          <div class="card -dashboard" style="width: 18rem;">
+            <div class="card-body">
+              <button id="inactiveUsers" class="card-link btn btn-info">Eliminar Usuarios Inactivos</button>
+            </div>
+          </div>
+        </div>
+        <div class="col-6" style="margin-top: 20px;">
+          <div class="card -dashboard" style="width: 18rem;">
+            <div class="card-body">
+              <a href="/chat" class="card-link btn btn-info">Chat</a>
+            </div>
+          </div>
+        </div>
+        <div class="col-6" style="margin-top: 20px;">
+          <div class="card -dashboard" style="width: 18rem;">
+            <div class="card-body">
+              <a href="/html/products" class="card-link btn btn-info">Tienda</a>
+            </div>
+          </div>
+        </div>
+        <div class="col-6" style="margin-top: 20px;">
+          <div class="card -dashboard" style="width: 18rem;">
+            <div class="card-body">
+              <a href="/api/users" class="card-link btn btn-info">Gestionar Usuarios</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="/socket.io/socket.io.js"></script>
+<script src="/js/productsToCart.js"></script>
+<script>
+  const sessionUser = { idCart: '{{sessionUser.idCart}}', isPremium: '{{sessionUser.isPremium}}',
+  _id: '{{sessionUser._id}}' };
+</script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+

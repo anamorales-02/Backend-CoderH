@@ -1,38 +1,56 @@
 import express from 'express';
-import http from 'http';
-
-import __dirname from "./utils.js";
+import cors from 'cors';
 import swaggerJSDoc from "swagger-jsdoc";
 import swaggerUiExpress from "swagger-ui-express";
-
-import { productsRouter } from './Routers/productsRouter.js';
-import { cartRouter } from './Routers/cartsRouter.js';
-import { clientRouter } from './Routers/clientRouter.js';
-import { connectMongo, connectSocket } from './config/utils.js';
-import { ProductManager } from './dao/ProductManager.js';
+import productRouters from './Routers/productsRouter.js';
+import cartRouters from './Routers/cartsRouter.js';
+import chatRouters from './Routers/chatRouter.js';
+import authRouters from './Routers/authRouter.js';
+import userRouters from './Routers/usersRouter.js';
+import { connectMongo } from './utils/utils.js';
 import { engine } from 'express-handlebars';
-import { authRouter } from './Routers/authRouter.js'; 
-import { chatRouter } from './Routers/chatRouter.js';
-import { sessionsRouter } from './Routers/sessionsRouter.js';
-import { viewsRouter } from './Routers/viewsRouter.js';
 import session from 'express-session';
+import ticketRouter from './Routers/tiketRouter.js';
+import sessionsRouter from './Routers/sessionsRouter.js';
 import cookieParser from 'cookie-parser';
 import MongoStore from 'connect-mongo';
-import { initPassport } from './config/passportConfig.js';
+import { setupSocketServer } from "./utils/socket-io.js";
+import { iniPassport } from './config/passportConfig.js';
 import passport from 'passport';
 import path from 'path';
-import config from "./config/config.js";
+import http from 'http';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+import errorHandler from "./middlewares/error.js";
 
 const app = express();
-const PORT = config.port;
-
-const server = httpServer.listen(PORT, () =>
-  console.log(`📢 Server listening on port: ${PORT}`)
-);
+const port = 8080;
 
 const httpServer = http.createServer(app);
-connectMongo(); // Conecta a la base de datos MongoDB
-connectSocket(httpServer); // Conecta el servidor de sockets
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+httpServer.listen(port, () => {
+  console.log(`Server running on http://localhost:${port}/auth/login`);
+});
+
+setupSocketServer(httpServer);
+
+connectMongo();
+
+import { connectToDatabase } from "./utils/dbConfig.js";
+
+async function startApp() {
+  try {
+    await connectToDatabase();
+    // Resto de tu lógica de la aplicación
+  } catch (error) {
+    console.error(error);
+    // Manejar errores de conexión a la base de datos
+  }
+}
+
+startApp();
 
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
@@ -56,7 +74,7 @@ session({
 })
 )
 
-initPassport()
+iniPassport()
 app.use(passport.initialize())
 app.use(passport.session())
 
@@ -86,11 +104,15 @@ app.set('view engine', 'handlebars');
 app.set('views', path.join('./views'));
 
 // Routes
-app.use('/api', productsRouter);
-app.use('/api', cartRouter);
-app.use('/', clientRouter);
-app.use('/api/sessions', sessionsRouter)
-app.use('/', viewsRouter)
-app.use('/chat', chatRouter)
-app.use('/auth', authRouter)
+app.use('/', userRouters);
+app.use('/', productRouters);
+app.use('/', cartRouters);
+app.use('/', chatRouters);
+app.use('/', authRouters);
+app.use('/', sessionsRouter);
+app.use('/', ticketRouter);
+app.use(errorHandler);
 
+app.get("*", (req, res) => {
+  return res.redirect("/auth/login");
+});

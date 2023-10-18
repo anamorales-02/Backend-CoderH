@@ -1,60 +1,32 @@
-import express from 'express';
-import ProductsService from '../services/productsService.js';
+import { Router } from 'express';
+import { ProductService } from '../services/productsService.js';
+import { customProductsController } from '../controller/productController.js';
+import { isUser, isAdmin, isLogged } from '../middlewares/auth.js';
 
-export const productsRouter = express.Router();
-const productsService = new ProductsService();
+const productRouter = Router();
+const productService = new ProductService(); 
 
-productsRouter.get('/', async (req, res) => {
-  try {
-    const products = await productsService.getAllProducts();
-    res.status(200).json({ status: 'success', payload: products });
-  } catch (error) {
-    res.status(500).json({ status: 'error', message: 'Error getting products' });
-  }
-});
+// Ruta para obtener todos los productos 
+productRouter.get("/products", customProductsController.getProducts);
 
-productsRouter.get('/:id', async (req, res) => {
-  try {
-    const productId = req.params.id;
-    const product = await productsService.getProductById(productId);
-    if (!product) {
-      return res.status(404).json({ status: 'error', message: `Product ${productId} not found` });
-    }
-    res.status(200).json({ status: 'success', payload: product });
-  } catch (error) {
-    res.status(500).json({ status: 'error', message: 'Error getting product' });
-  }
-});
+productRouter.get("/productsP", customProductsController.getProductsPaginate);
 
-productsRouter.post('/', async (req, res) => {
-  try {
-    const { name, price, description } = req.body;
-    const product = await productsService.createProduct({ name, price, description });
-    res.status(201).json({ status: 'success', payload: product });
-  } catch (error) {
-    res.status(500).json({ status: 'error', message: 'Error creating product' });
-  }
-});
+// Ruta para obtener un producto por ID 
+productRouter.get('/products/:pid', customProductsController.getProductsPaginate);
 
-productsRouter.put('/:id', async (req, res) => {
-  try {
-    const productId = req.params.id;
-    const { name, price, description } = req.body;
-    const updatedProduct = await productsService.updateProduct(productId, { name, price, description });
-    res.status(200).json({ status: 'success', payload: updatedProduct });
-  } catch (error) {
-    res.status(500).json({ status: 'error', message: 'Error updating product' });
-  }
-});
+// Ruta para agregar un nuevo producto 
+productRouter.post("/products/new", isAdmin, customProductsController.createProduct);
 
-productsRouter.delete('/:id', async (req, res) => {
-  try {
-    const productId = req.params.id;
-    await productsService.deleteProduct(productId);
-    res.status(200).json({ status: 'success', message: 'Product deleted' });
-  } catch (error) {
-    res.status(500).json({ status: 'error', message: 'Error deleting product' });
-  }
-});
+// Ruta para actualizar un producto por ID 
+productRouter.put("/products/:pid", isAdmin, customProductsController.updateProduct);
 
-export default productsRouter;
+// Ruta para eliminar un producto por ID  
+productRouter.delete("/products/:pid", isUser, customProductsController.deleteProduct);
+
+// Ruta para obtener productos en tiempo real  
+productRouter.get("/realtimeproducts", isUser, customProductsController.renderRealtimeProducts);
+
+// Ruta para renderizar una página HTML con productos  
+productRouter.get("/html/products", isUser, customProductsController.renderProductsPage);
+
+export default productRouter;

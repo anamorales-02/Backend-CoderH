@@ -1,114 +1,34 @@
-import express from 'express';
-import CartService from '../services/cartService.js';
+import { Router } from 'express';
+import { cartsController } from '../controller/cartController.js';
+import { isLogged, isUser } from '../middlewares/auth.js';
 
-export const cartRouter = express.Router();
-const cartService = new CartService();
+const customCartRouter = Router();
 
-cartRouter.get('/:cid', async (req, res) => {
-  try {
-    const cid = req.params.cid;
-    const cart = await cartService.getCartById(cid);
-    if (!cart) {
-      return res.status(404).json({ status: 'error', message: `Cart ${cid} not found` });
-    }
-    res.status(200).json({ status: 'success', payload: cart });
-  } catch (error) {
-    res.status(500).json({ status: 'error', message: 'Error getting cart' });
-  }
-});
+// Ruta para mostrar todos los carritos  
+customCartRouter.get('/custom/carts', isUser, cartsController.getCartsList);
 
-cartRouter.post('/', async (req, res) => {
-  try {
-    const cart = await cartService.createCart();
-    res.status(201).json({ status: 'success', payload: cart });
-  } catch (error) {
-    res.status(500).json({ status: 'error', message: 'Error creating cart' });
-  }
-});
+// Ruta para mostrar productos en un carrito específico  
+customCartRouter.get('/custom/carts/:cid', isUser, cartsController.getProductsByCartId);
 
-cartRouter.post('/:cid/product/:pid', async (req, res) => {
-  try {
-    const cid = req.params.cid;
-    const pid = req.params.pid;
-    const cart = await cartService.addProductToCart(cid, pid);
-    res.status(200).json({ status: 'success', payload: cart });
-  } catch (error) {
-    res.status(500).json({ status: 'error', message: 'FATAL ERROR' });
-  }
-});
+// Ruta para crear un nuevo carrito  
+customCartRouter.post('/custom/carts', isUser, cartsController.addCart);
 
-cartRouter.delete('/:cid', async (req, res) => {
-  try {
-    const cid = req.params.cid;
-    const cart = await cartService.clearCart(cid);
-    return res.status(200).json({
-      status: 'success',
-      message: 'Cart deleted',
-      payload: cart
-    });
-  } catch (error) {
-    return res.status(400).json({
-      status: 'error',
-      message: error.message
-    });
-  }
-});
+// Ruta para agregar un producto a un carrito  
+customCartRouter.put('/custom/carts/:cid/products/:pid', isUser, cartsController.addProductToCart); 
 
-cartRouter.delete('/:cid/products/:pid', async (req, res) => {
-  try {
-    const cid = req.params.cid;
-    const pid = req.params.pid;
-    const cart = await cartService.removeProductFromCart(cid, pid);
-    return res.status(200).json({
-      status: 'success',
-      message: 'Product removed from cart',
-      payload: cart
-    });
-  } catch (error) {
-    return res.status(400).json({
-      status: 'error',
-      message: error.message
-    });
-  }
-});
+// Ruta para eliminar un producto de un carrito  
+customCartRouter.delete('/custom/carts/:cid/products/:pid', isUser, cartsController.deleteProductFromCart);
 
-cartRouter.put('/:cid', async (req, res) => {
-  try {
-    const cid = req.params.cid;
-    const products = req.body.products;
-    console.log(products);
-    const cart = await cartService.updateCart(cid, products);
-    return res.status(200).json({
-      status: 'success',
-      message: 'Cart updated',
-      payload: cart
-    });
-  } catch (error) {
-    return res.status(500).json({
-      status: 'error',
-      message: 'Something went wrong',
-      data: {}
-    });
-  }
-});
+// Ruta para vaciar un carrito  
+customCartRouter.delete('/custom/carts/:cid', isUser, cartsController.emptyCart);
 
-cartRouter.put('/:cid/products/:pid', async (req, res) => {
-  try {
-    const cid = req.params.cid;
-    const pid = req.params.pid;
-    const quantity = req.body.quantity;
+// Ruta para eliminar todos los carritos  
+customCartRouter.delete('/custom/carts/deleteAll/:cid', isUser, cartsController.deleteCart);
 
-    const cart = await cartService.updateProductQuantity(cid, pid, quantity);
-    return res.status(200).json({
-      status: 'success',
-      message: 'Product quantity updated in cart',
-      payload: cart
-    });
-  } catch (error) {
-    return res.status(500).json({
-      status: 'error',
-      message: 'Something went wrong',
-      data: {}
-    });
-  }
-});
+// Ruta para mostrar productos en un carrito (usando Handlebars, requiere autenticación de usuario)
+customCartRouter.get('/custom/carts/products/:cid', isUser, cartsController.getProductsByCartId_Handlebars);
+
+// Ruta para mostrar la tienda  
+customCartRouter.get('/custom/store', isUser, cartsController.getProductsByCartId_Paginate);
+
+export default customCartRouter;

@@ -1,19 +1,20 @@
 import passport from 'passport';
+import GitHubStrategy from "passport-github2";
 import local from 'passport-local';
 import { UserModel } from '../dao/models/usersModel.js';
-import { createHash, isValidPassword } from './utils.js';
-import GitHubStrategy from 'passport-github2';
 import fetch from 'node-fetch';
-import config from './config.js';
+import { isValidPassword, createHash } from '../utils/passwordUtils.js';
+import { UserService } from '../services/userService.js';
+import dotenv from 'dotenv'
 
 const LocalStrategy = local.Strategy;
 
-export function initPassport() {
+export function iniPassport() {
   passport.use(
     'login',
     new LocalStrategy({ usernameField: 'email' }, async (username, password, done) => {
       try {
-        const user = await UserModel.findOne({ email: username });
+        const user = await UserService.getUserByIdOrEmail(null, username);
         if (!user) {
           console.log('User Not Found with username (email) ' + username);
           return done(null, false);
@@ -22,7 +23,8 @@ export function initPassport() {
           console.log('Invalid Password');
           return done(null, false);
         }
-
+        UserService.updateUser(user._id, { lastLoginDate: new Date() })
+        console.log('login successful')
         return done(null, user);
       } catch (err) {
         return done(err);
@@ -66,12 +68,14 @@ export function initPassport() {
     )
   );
 
+
+  dotenv.config();
   passport.use(
     'github',
     new GitHubStrategy(
       {
-        clientID: config.clientId,
-        clientSecret: config.clientSecret,
+        clientID: process.env.CLIENT_ID,
+        clientSecret: process.env.CLIENT_SECRET,
         callbackURL: 'http://localhost:8080/api/sessions/githubcallback',
       },
       async (accesToken, _, profile, done) => {

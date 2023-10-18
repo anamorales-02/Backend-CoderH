@@ -1,94 +1,144 @@
-import { ProductModel } from '../dao/models/productsModel.js';
+import { customProductDAO } from '../dao/CustomProductDAO.js';
+//import EErros from "../errors/enums.js";
+//import CustomError from "../errors/customError.js";
 
-class ProductService {
-  async getProducts({ limit, page, sort, query }) {
+export class ProductService {
+  async getProducts(limit){
     try {
-      const filter = {};
-      if (query) {
-        filter.$text = { $search: query };
-      }
-      const sortOptions = {};
+      const products = await  customProductDAO.getProducts(limit);
+      return products;
+    } catch (err) {
+      throw (`Error getting products`);
+    }
+  }
 
-      if (sort === 'asc') {
-        sortOptions.price = 1;
-      } else if (sort === 'desc') {
-        sortOptions.price = -1;
-      }
+  async getProductsByOwner(owner) {
+    try {
+      const products = await  customProductDAO.getProducts();
+      const filteredProducts = products.filter(product => product.owner === owner);
+      return filteredProducts;
+    } catch (err) {
+      throw (`Error getting products`);
+    }
+  }
 
-      const options = {
-        page,
-        limit,
-        sort: sortOptions,
+  async getProductsPaginate(limit, page, filter, sort, attName) {
+    try {
+      const filterQuery = filter ? { [attName || "category"]: filter } : {};
+      const limitValue = limit || 10;
+      const pageValue = page || 1;
+      const sortPrice = sort ? { price: sort } : {};
+
+      const products = await  customProductDAO.getProductsPaginate(filterQuery, {
+        limit: limitValue,
         lean: true,
-        customLabels: {
-          docs: 'payload',
-        },
+        page: pageValue,
+        sort: sortPrice
+      });
+
+      return products;
+    } catch (err) {
+      throw (`Error getting products ${err}`);
+    }
+  }
+
+  async getProductById(id) {
+    try {
+      const product = await  customProductDAO.getProductById({ _id: id });
+      return product;
+    } catch (err) {
+      throw (`No se encontró producto de id ${id}.`);
+    }
+  }
+
+  async addProduct(newProd) {
+    try {
+      const products = await this.getProducts();
+      const controlCode = products.some((product) => product.code == newProd.code);
+      if (controlCode) {
+        throw ("Code already exists");
+      }
+
+      function validateString(value, fieldName) {
+        if (!value) {
+          throw `Must enter a ${fieldName}`;
+        }
+        return value;
+      }
+
+      function validatePositiveInteger(value, fieldName) {
+        if (!value || !/^\d+$/.test(value)) {
+          throw `Must enter a valid ${fieldName}`;
+        }
+        return parseInt(value);
+      }
+
+      let newProduct = {
+        title: validateString(newProd.title, "title"),
+        description: validateString(newProd.description, "description"),
+        code: validatePositiveInteger(newProd.code, "code"),
+        price: validatePositiveInteger(newProd.price, "price"),
+        status: newProd.status,
+        stock: validatePositiveInteger(newProd.stock, "stock"),
+        category: validateString(newProd.category, "category"),
+        owner: newProd.owner, // ID del usuario
+        thumbnail: newProd.thumbnail || "Undefined"
       };
 
-      const result = await ProductModel.paginate(filter, options);
+      const createdProduct = await  customProductDAO.addProduct(newProduct);
+      return createdProduct;
+    } catch (err) {
+      CustomError.createError({
+        name: 'Creating product',
+        message: err,
+        code: EErros.ADD_PRODUCT_ERR
+      });
+    }
+  }
 
-      const totalPages = result.totalPages;
-      const hasPrevPage = result.hasPrevPage;
-      const hasNextPage = result.hasNextPage;
-      const prevPage = result.prevPage;
-      const nextPage = result.nextPage;
-      const paramsPrev = new URLSearchParams(`page=${prevPage}&limit=${limit}&sort=${sort}&query=${query}`);
-      const paramsNext = new URLSearchParams(`page=${nextPage}&limit=${limit}&sort=${sort}&query=${query}`);
-      const prevLink = hasPrevPage ? `/api/products?${paramsPrev.toString()}` : null;
-      const nextLink = hasNextPage ? `/api/products?${paramsNext.toString()}` : null;
+  async updateProduct(id, fieldsToUpdate) {
+    try {
+      function validateField(value, errorMessage) {
+        if (value === "") {
+          throw errorMessage;
+        }
+        return value;
+      }
 
-      return {
-        status: 'success',
-        payload: result.payload,
-        totalPages,
-        prevPage,
-        nextPage,
-        page,
-        hasPrevPage,
-        hasNextPage,
-        prevLink,
-        nextLink,
+      const fieldValidations = {
+        title: "Must enter a title",
+        description: "Must enter a description",
+        code: "Must enter a valid code",
+        price: "Must enter a valid price",
+        stock: "Must enter a valid stock",
+        category: "Must enter category of product"
       };
-    } catch (error) {
-      throw error;
+
+      const productToUpdate = { ...fieldsToUpdate };
+
+      for (const field in fieldsToUpdate) {
+        if (field in fieldValidations) {
+          productToUpdate[field] = validateField(fieldsToUpdate[field], fieldValidations[field]);
+        }
+      }
+
+      const prodUpdated = await  customProductDAO.updateProduct({ _id: id }, productToUpdate);
+      return prodUpdated;
+    } catch (err) {
+      throw (`Couldnt update product ${err}`);
     }
   }
 
-  async getProductById(productId) {
+  async deleteProduct(id) {
     try {
-      const product = await ProductModel.findOne({ _id: productId });
-      return product;
-    } catch (error) {
-      throw error;
-    }
-  }
-
-  async createProduct(productData) {
-    try {
-      const product = await ProductModel.create(productData);
-      return product;
-    } catch (error) {
-      throw error;
-    }
-  }
-
-  async updateProduct(productId, productData) {
-    try {
-      const product = await ProductModel.findByIdAndUpdate(productId, productData, { new: true });
-      return product;
-    } catch (error) {
-      throw error;
-    }
-  }
-
-  async deleteProduct(productId) {
-    try {
-      const product = await ProductModel.findByIdAndDelete(productId);
-      return product;
-    } catch (error) {
-      throw error;
+      const deletedProduct = await  customProductDAO.deleteProduct({ _id: id });
+      console.log({ deletedProduct });
+      return deletedProduct;
+    } catch (err) {
+      throw (`Error deleting product ${id}`);
     }
   }
 }
 
-export default ProductService;
+export const productsService = new ProductService();
+ 

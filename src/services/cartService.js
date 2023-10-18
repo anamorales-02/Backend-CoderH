@@ -117,4 +117,5 @@ export default class CartService {
       throw error;
     }
   }
-}
+};
+export const cartService = new CartService();

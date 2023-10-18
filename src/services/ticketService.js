@@ -1,4 +1,4 @@
-import { ticketDAO } from '../DAO/ticketDAO.js';
+import { customTicketDAO } from '../dao/customTicketDAO.js';
 import { cartService } from './cartService.js';
 
 export class TicketService {
@@ -11,7 +11,7 @@ export class TicketService {
         purchaser: purchaser,
         products: ticket
       };
-      const savedTicket = await ticketDAO.addTicket(ticketData);
+      const savedTicket = await customTicketDAO.addTicket(ticketData);
       return savedTicket;
     } catch (error) {
       throw (`Error adding ticket ${error}`);
